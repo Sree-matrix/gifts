@@ -1,0 +1,35 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: #FDFBFF;
+  color: #1A0A3C;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #F3EFFF; }
+::-webkit-scrollbar-thumb { background: rgba(91,45,158,0.3); border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: #5B2D9E; }
+
+/* Selection */
+::selection { background: rgba(245,200,66,0.35); color: #1A0A3C; }
+
+/* Smooth image loading */
+img { display: block; max-width: 100%; }
+
+/* Remove default list styles */
+ul, ol { list-style: none; }
+
+/* Focus ring */
+:focus-visible {
+  outline: 2px solid #5B2D9E;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
