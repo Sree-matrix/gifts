@@ -6,10 +6,10 @@ import { useInView } from "react-intersection-observer";
 import { BRAND } from "@/lib/theme";
 
 const categories = [
-  { label: "Photo Frames",   href: "/products/frames",   count: "30+ styles", img: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=600&q=80" },
-  { label: "Polaroids",      href: "/products/polaroids", count: "5 collections", img: "https://images.unsplash.com/photo-1526566661780-1a67ea3c863e?w=600&q=80" },
-  { label: "Photo Albums",   href: "/products/albums",   count: "5 styles", img: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=600&q=80" },
-  { label: "Miniatures",     href: "/products/miniatures", count: "4 types", img: "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=600&q=80" },
+  { label: "Photo Frames",   href: "/products/frames",   count: "30+ styles", img: "wedding/wedding-frame-1.jpg" },
+  { label: "Polaroids",      href: "/products/polaroids", count: "5 collections", img: "poloroids/poloroids-2.jpg" },
+  { label: "Photo Albums",   href: "/products/albums",   count: "5 styles", img: "/photoalbum/photo-album-1.jpg" },
+  { label: "Photo Cards",     href: "/products/miniatures", count: "4 types", img: "/photocards/cards-2.jpg" },
   { label: "Fridge Magnets", href: "/products/magnets",  count: "4 styles", img: "https://images.unsplash.com/photo-1499516085052-ad52a2af0c30?w=600&q=80" },
 ];
 
