@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -34,7 +35,6 @@ const rightLinks: NavLink[] = [
   { label: "Contact",      href: "/contact" },
 ];
 
-// Used by the mobile drawer (full list, in order).
 const navLinks = [...leftLinks, ...rightLinks];
 
 export default function Navbar() {
@@ -70,9 +70,11 @@ export default function Navbar() {
           }
           sx={{
             color:      linkColor,
-            fontWeight: 400,
-            fontSize:   "0.76rem",
-            letterSpacing: "0.12em",
+            fontWeight: 500,
+            fontSize:   "0.82rem",
+            letterSpacing: "0.14em",
+            fontFamily: "'Lexend Deca', sans-serif",
+            textTransform: "uppercase",
             px: 2, py: 1,
             transition: "color 0.3s",
             "&:hover":  { color: linkHover, backgroundColor: "transparent" },
@@ -113,10 +115,10 @@ export default function Navbar() {
                     transition: "background 0.2s",
                   }}>
                     <Typography className="nav-child" sx={{
-                      fontFamily:    "'Jost', sans-serif",
+                      fontFamily:    "'Martel Sans', sans-serif",
                       fontWeight:    400,
-                      fontSize:      "0.82rem",
-                      letterSpacing: "0.06em",
+                      fontSize:      "0.85rem",
+                      letterSpacing: "0.04em",
                       color:         BRAND.charcoal,
                       transition:    "color 0.2s",
                     }}>
@@ -133,9 +135,11 @@ export default function Navbar() {
       <Link key={link.href} href={link.href} style={{ textDecoration: "none" }}>
         <Button sx={{
           color:      linkColor,
-          fontWeight: 400,
-          fontSize:   "0.76rem",
-          letterSpacing: "0.12em",
+          fontWeight: 500,
+          fontSize:   "0.82rem",
+          letterSpacing: "0.14em",
+          fontFamily: "'Lexend Deca', sans-serif",
+          textTransform: "uppercase",
           px: 2, py: 1,
           transition: "color 0.3s",
           "&:hover":  { color: linkHover, backgroundColor: "transparent" },
@@ -167,34 +171,40 @@ export default function Navbar() {
           px:   { xs: 2,   md: 6 },
           transition: "padding 0.4s ease",
         }}>
-          {/* ── Left links (desktop) ── */}
+          {/* ── Desktop Links Left ── */}
           <Box sx={{ display: { xs: "none", md: "flex" }, flex: 1, justifyContent: "flex-start", alignItems: "center", gap: 0.5 }}>
             {leftLinks.map(renderNavItem)}
           </Box>
 
-          {/* ── Logo (centered) ── */}
-          <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", flexShrink: 0 }}>
-            <Box sx={{
-              position: "relative",
-              height: { xs: 38, md: 46 },
-              width:  { xs: 80, md: 97 },   // 1142×540 ≈ 2.11:1
-              flexShrink: 0,
-              // White logo is invisible on the light scrolled navbar — render it ink-dark there.
-              filter: scrolled ? "brightness(0)" : "none",
-              transition: "filter 0.4s",
-            }}>
-              <Image
-                src="/images/paperboatgiftslogo.png"
-                alt="Paperboat Gifts & Forever Moments"
-                fill
-                priority
-                sizes="97px"
-                style={{ objectFit: "contain", objectPosition: "center" }}
-              />
-            </Box>
-          </Link>
+          {/* ── Logo Container (Centered Header Variant Context) ── */}
+          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", flexShrink: 0 }}>
+              <Box sx={{
+                position: "relative",
+                height: { xs: 38, md: 46 },
+                width:  { xs: 80, md: 97 },
+                flexShrink: 0,
+                filter: scrolled ? "brightness(0)" : "none",
+                transition: "filter 0.4s",
+              }}>
+                <Image
+                  src="/images/paperboatgiftslogo.png"
+                  alt="Paperboat Gifts & Forever Moments"
+                  fill
+                  priority
+                  sizes="97px"
+                  style={{ objectFit: "contain", objectPosition: "center" }}
+                />
+              </Box>
+            </Link>
+            
+            {/* Embedded H2 Component Mapping */}
+            <Typography variant="h2" sx={{ display: "none" }}>
+              Paperboat Gifts
+            </Typography>
+          </Box>
 
-          {/* ── Right links + CTA (desktop) ── */}
+          {/* ── Desktop Links Right + Order Now CTA ── */}
           <Box sx={{ display: { xs: "none", md: "flex" }, flex: 1, justifyContent: "flex-end", alignItems: "center", gap: 0.5 }}>
             {rightLinks.map(renderNavItem)}
 
@@ -202,9 +212,12 @@ export default function Navbar() {
               <Button variant="contained" sx={{
                 backgroundColor: BRAND.purple,
                 color:           "#FDFBFF",
-                fontSize:        "0.72rem",
+                fontFamily:      "'Playfair Display SC', serif",
+                fontWeight:      700,
+                fontSize:        "0.76rem",
                 letterSpacing:   "0.16em",
                 px: 3.5, py: 1.4,
+                borderRadius:    0,
                 "&:hover": {
                   backgroundColor: BRAND.purpleDark,
                   boxShadow: "0 8px 28px rgba(91,45,142,0.4)",
@@ -215,7 +228,7 @@ export default function Navbar() {
             </Link>
           </Box>
 
-          {/* ── Mobile hamburger ── */}
+          {/* ── Mobile Trigger Menu ── */}
           <IconButton
             onClick={() => setMobileOpen(true)}
             sx={{
@@ -228,7 +241,7 @@ export default function Navbar() {
         </Toolbar>
       </AppBar>
 
-      {/* ── Mobile Drawer ── */}
+      {/* ── Mobile Sidebar Drawer ── */}
       <Drawer
         anchor="right"
         open={mobileOpen}
@@ -262,10 +275,10 @@ export default function Navbar() {
                     <ListItemText
                       primary={link.label}
                       primaryTypographyProps={{
-                        fontFamily:    "'Jost', sans-serif",
-                        letterSpacing: "0.12em",
+                        fontFamily:    "'Oswald', sans-serif",
+                        letterSpacing: "0.14em",
                         textTransform: "uppercase",
-                        fontSize:      "0.8rem",
+                        fontSize:      "0.9rem",
                         fontWeight:    500,
                         color:         BRAND.charcoal,
                       }}
@@ -283,10 +296,10 @@ export default function Navbar() {
                           <ListItemText
                             primary={c.label}
                             primaryTypographyProps={{
-                              fontFamily: "'Jost', sans-serif",
-                              fontSize:   "0.85rem",
+                              fontFamily: "'Martel Sans', sans-serif",
+                              fontSize:   "0.88rem",
                               color:      BRAND.purple,
-                              fontWeight: 300,
+                              fontWeight: 400,
                             }}
                           />
                         </ListItemButton>
@@ -300,10 +313,10 @@ export default function Navbar() {
                     <ListItemText
                       primary={link.label}
                       primaryTypographyProps={{
-                        fontFamily:    "'Jost', sans-serif",
-                        letterSpacing: "0.12em",
+                        fontFamily:    "'Oswald', sans-serif",
+                        letterSpacing: "0.14em",
                         textTransform: "uppercase",
-                        fontSize:      "0.8rem",
+                        fontSize:      "0.9rem",
                         fontWeight:    500,
                         color:         BRAND.charcoal,
                       }}
@@ -312,6 +325,7 @@ export default function Navbar() {
                 </Link>
               )
             )}
+            
             <Box sx={{ mt: 4 }}>
               <Link href="/order" style={{ textDecoration: "none" }} onClick={() => setMobileOpen(false)}>
                 <Button
@@ -319,8 +333,11 @@ export default function Navbar() {
                   variant="contained"
                   sx={{
                     backgroundColor: BRAND.purple,
+                    fontFamily:      "'Playfair Display SC', serif",
+                    fontWeight:      700,
                     py: 2,
-                    letterSpacing: "0.16em",
+                    letterSpacing:   "0.16em",
+                    borderRadius:    0,
                     "&:hover": { backgroundColor: BRAND.purpleDark },
                   }}
                 >

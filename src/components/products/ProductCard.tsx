@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { Box, Typography, Chip, Button } from "@mui/material";
+import { Box, Typography, Chip } from "@mui/material";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import type { Product } from "@/lib/products";
@@ -14,8 +15,6 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, index = 0 }: ProductCardProps) {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
-  const wa = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919876543210";
-  const waMsg = encodeURIComponent(`Hello Paperboat Gifts! I'm interested in: ${product.name} (${product.priceLabel})`);
 
   return (
     <motion.div
@@ -25,6 +24,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
       transition={{ duration: 0.55, delay: Math.min(index * 0.07, 0.35) }}
       style={{ height: "100%" }}
     >
+      <Link href={`/products/${product.category}/${product.slug}`} style={{ textDecoration: "none", display: "block", height: "100%" }}>
       <Box sx={{
         backgroundColor: "#FDFBFF",
         border:    `1px solid rgba(91,45,142,0.1)`,
@@ -32,6 +32,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
         display:   "flex",
         flexDirection: "column",
         overflow:  "hidden",
+        cursor:    "pointer",
         transition: "all 0.4s cubic-bezier(0.25,0.46,0.45,0.94)",
         "&:hover": {
           boxShadow:   `0 16px 52px rgba(91,45,142,0.12)`,
@@ -60,39 +61,25 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
               <Chip label="New" size="small" sx={{ backgroundColor: BRAND.gold, color: BRAND.charcoal, height: 22, fontWeight: 600 }} />
             )}
           </Box>
-          {/* Hover action bar */}
+          {/* Hover hint */}
           <Box className="p-actions" sx={{
             position:  "absolute", bottom: 0, left: 0, right: 0,
             opacity: 0, transform: "translateY(6px)",
             transition: "all 0.3s ease",
-            display:   "flex", gap: 0.5, p: 1.5,
+            p: 1.5,
           }}>
-            <Link href={`/products/${product.category}/${product.slug}`} style={{ flex: 1, textDecoration: "none" }}>
-              <Button fullWidth size="small" sx={{
-                backgroundColor: "rgba(253,251,255,0.96)",
-                color:           BRAND.purple,
-                borderRadius:    0,
-                fontFamily:      "'Jost', sans-serif",
-                fontSize:        "0.7rem", letterSpacing: "0.1em",
-                py: 1.4, fontWeight: 500,
-                "&:hover": { backgroundColor: "#FDFBFF" },
-              }}>
-                View Details
-              </Button>
-            </Link>
-            <Link href={`https://wa.me/${wa}?text=${waMsg}`} target="_blank" style={{ flex: 1, textDecoration: "none" }}>
-              <Button fullWidth size="small" sx={{
-                backgroundColor: "#25D366",
-                color:           "#fff",
-                borderRadius:    0,
-                fontFamily:      "'Jost', sans-serif",
-                fontSize:        "0.7rem", letterSpacing: "0.08em",
-                py: 1.4, fontWeight: 500,
-                "&:hover": { backgroundColor: "#1DB954" },
-              }}>
-                WhatsApp Order
-              </Button>
-            </Link>
+            <Box sx={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 0.8,
+              backgroundColor: "rgba(253,251,255,0.96)",
+              color:           BRAND.purple,
+              py: 1.4,
+              fontFamily:      "'Jost', sans-serif",
+              fontSize:        "0.7rem", letterSpacing: "0.12em",
+              textTransform:   "uppercase", fontWeight: 500,
+            }}>
+              View Details
+              <ArrowForwardIcon sx={{ fontSize: 14 }} />
+            </Box>
           </Box>
         </Box>
 
@@ -137,6 +124,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
           </Box>
         </Box>
       </Box>
+      </Link>
     </motion.div>
   );
 }

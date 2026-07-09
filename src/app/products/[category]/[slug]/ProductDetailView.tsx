@@ -1,20 +1,107 @@
 "use client";
+import { useState } from "react";
 import { Box, Container, Grid, Typography, Button, Chip, Divider } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
-import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import SendIcon from "@mui/icons-material/Send";
 import CheckIcon from "@mui/icons-material/Check";
+import toast from "react-hot-toast";
 import type { Product } from "@/lib/products";
 import { BRAND } from "@/lib/theme";
 
 interface Props {
   product: Product;
-  wa: string;
-  waMsg: string;
 }
 
-export default function ProductDetailView({ product, wa, waMsg }: Props) {
+// Downscale + convert an image file to a base64 data URL (falls back to raw read for HEIC etc.)
+async function fileToDataUrl(file: File, maxDim = 1400, quality = 0.82): Promise<string> {
+  const readRaw = () =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(new Error("read failed"));
+      reader.readAsDataURL(file);
+    });
+
+  try {
+    const url = URL.createObjectURL(file);
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const img = new window.Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          if (width >= height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject(new Error("no ctx"));
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("bad image"));
+      };
+      img.src = url;
+    });
+    return dataUrl;
+  } catch {
+    return readRaw();
+  }
+}
+
+export default function ProductDetailView({ product }: Props) {
+  const [selectedSize, setSelectedSize] = useState<string>("");
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) setUploadedFiles(Array.from(e.target.files));
+  };
+
+  const handleSubmit = async () => {
+    if (uploadedFiles.length === 0) {
+      toast.error("Please upload at least one photo.");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const images = await Promise.all(uploadedFiles.map((f) => fileToDataUrl(f)));
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: product.id,
+          productName: product.name,
+          category: product.category,
+          priceLabel: product.priceLabel,
+          size: selectedSize,
+          images,
+        }),
+      });
+      if (!res.ok) throw new Error("Request failed");
+
+      toast.success("Order placed! We'll be in touch soon. 🎉");
+      setSelectedSize("");
+      setUploadedFiles([]);
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Box sx={{ pt: { xs: 10, md: 12 }, pb: { xs: 8, md: 12 }, backgroundColor: BRAND.purpleGhost }}>
       <Container maxWidth="lg">
@@ -82,7 +169,7 @@ export default function ProductDetailView({ product, wa, waMsg }: Props) {
 
             {/* Features */}
             <Typography sx={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", fontWeight: 600, color: BRAND.charcoal, mb: 2 }}>
-              What's Included
+              What&apos;s Included
             </Typography>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2, mb: 4 }}>
               {product.features.map((f) => (
@@ -95,42 +182,92 @@ export default function ProductDetailView({ product, wa, waMsg }: Props) {
               ))}
             </Box>
 
-            {/* Sizes */}
-            {product.sizes && (
-              <Box sx={{ mb: 4 }}>
+            {/* Order form — size + photo only */}
+            <Box sx={{ backgroundColor: "#FDFBFF", border: `1px solid rgba(91,45,142,0.12)`, p: { xs: 2.5, md: 3.5 } }}>
+              <Typography sx={{ fontFamily: "'Playfair Display', serif", fontSize: "1.15rem", fontWeight: 600, color: BRAND.charcoal, mb: 2.5 }}>
+                Order This Piece
+              </Typography>
+
+              {/* Sizes */}
+              {product.sizes && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography sx={{ fontFamily: "'Jost', sans-serif", fontWeight: 500, fontSize: "0.72rem", letterSpacing: "0.14em", textTransform: "uppercase", color: BRAND.charcoal, mb: 1.5 }}>
+                    Select Size
+                  </Typography>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                    {product.sizes.map((s) => {
+                      const active = selectedSize === s;
+                      return (
+                        <Box
+                          key={s}
+                          onClick={() => setSelectedSize(active ? "" : s)}
+                          sx={{
+                            px: 2, py: 0.8, cursor: "pointer", transition: "all 0.2s",
+                            border: `1px solid ${active ? BRAND.purple : "rgba(91,45,142,0.25)"}`,
+                            backgroundColor: active ? BRAND.purple : "transparent",
+                            "&:hover": { borderColor: BRAND.purple, backgroundColor: active ? BRAND.purple : BRAND.purplePale },
+                          }}
+                        >
+                          <Typography sx={{ fontFamily: "'Jost', sans-serif", fontSize: "0.8rem", color: active ? "#FDFBFF" : BRAND.charcoal }}>
+                            {s}
+                          </Typography>
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                </Box>
+              )}
+
+              {/* Photo upload */}
+              <Box sx={{ mb: 3 }}>
                 <Typography sx={{ fontFamily: "'Jost', sans-serif", fontWeight: 500, fontSize: "0.72rem", letterSpacing: "0.14em", textTransform: "uppercase", color: BRAND.charcoal, mb: 1.5 }}>
-                  Available Sizes
+                  Upload Your Photo
                 </Typography>
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                  {product.sizes.map((s) => (
-                    <Box key={s} sx={{ px: 2, py: 0.8, border: `1px solid rgba(91,45,142,0.25)`, cursor: "pointer", "&:hover": { borderColor: BRAND.purple, backgroundColor: BRAND.purplePale }, transition: "all 0.2s" }}>
-                      <Typography sx={{ fontFamily: "'Jost', sans-serif", fontSize: "0.8rem", color: BRAND.charcoal }}>
-                        {s}
+                <Box
+                  component="label"
+                  htmlFor="detail-photo-upload"
+                  sx={{
+                    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                    border: `2px dashed rgba(91,45,142,0.25)`, p: 3.5, cursor: "pointer", transition: "all 0.2s",
+                    "&:hover": { borderColor: BRAND.purple, backgroundColor: BRAND.purplePale },
+                  }}
+                >
+                  <CloudUploadIcon sx={{ fontSize: 34, color: BRAND.purple, mb: 1, opacity: 0.6 }} />
+                  <Typography sx={{ fontFamily: "'Jost', sans-serif", fontWeight: 400, fontSize: "0.85rem", color: BRAND.purple }}>
+                    Click to upload your photo(s)
+                  </Typography>
+                  <Typography sx={{ fontFamily: "'Jost', sans-serif", fontWeight: 300, fontSize: "0.72rem", color: BRAND.grey, mt: 0.5 }}>
+                    JPG, PNG, HEIC — high-res works best
+                  </Typography>
+                  {uploadedFiles.length > 0 && (
+                    <Box sx={{ mt: 1.5, px: 1.5, py: 1, backgroundColor: BRAND.purplePale }}>
+                      <Typography sx={{ fontFamily: "'Jost', sans-serif", fontSize: "0.78rem", color: BRAND.purple, fontWeight: 500 }}>
+                        ✅ {uploadedFiles.length} file{uploadedFiles.length > 1 ? "s" : ""} selected
                       </Typography>
                     </Box>
-                  ))}
+                  )}
+                  <input id="detail-photo-upload" type="file" accept="image/*" multiple hidden onChange={handleFileChange} />
                 </Box>
               </Box>
-            )}
 
-            {/* CTAs */}
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <Link href={`https://wa.me/${wa}?text=${waMsg}`} target="_blank" style={{ textDecoration: "none" }}>
-                <Button fullWidth variant="contained" startIcon={<WhatsAppIcon />} sx={{
-                  backgroundColor: "#25D366", color: "#fff", py: 2, fontSize: "0.78rem", letterSpacing: "0.12em",
-                  "&:hover": { backgroundColor: "#1DB954", boxShadow: "0 8px 28px rgba(37,211,102,0.4)" },
+              {/* CTAs */}
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <Button onClick={handleSubmit} fullWidth variant="contained" disabled={isSubmitting} startIcon={<SendIcon />} sx={{
+                  backgroundColor: BRAND.purple, color: "#FDFBFF", py: 2, fontSize: "0.78rem", letterSpacing: "0.12em",
+                  "&:hover": { backgroundColor: BRAND.purpleDark, boxShadow: "0 8px 28px rgba(91,45,142,0.4)" },
+                  "&:disabled": { backgroundColor: "rgba(91,45,142,0.4)", color: "#FDFBFF" },
                 }}>
-                  Order via WhatsApp
+                  {isSubmitting ? "Placing Order…" : "Place Order"}
                 </Button>
-              </Link>
-              <Link href="/order" style={{ textDecoration: "none" }}>
-                <Button fullWidth variant="outlined" startIcon={<ShoppingBagOutlinedIcon />} sx={{
-                  borderColor: BRAND.purple, color: BRAND.purple, py: 2, fontSize: "0.78rem", letterSpacing: "0.12em",
-                  "&:hover": { backgroundColor: BRAND.purplePale, borderColor: BRAND.purple },
-                }}>
-                  Place a Custom Order
-                </Button>
-              </Link>
+                <Link href="/order" style={{ textDecoration: "none" }}>
+                  <Button fullWidth variant="outlined" startIcon={<ShoppingBagOutlinedIcon />} sx={{
+                    borderColor: BRAND.purple, color: BRAND.purple, py: 2, fontSize: "0.78rem", letterSpacing: "0.12em",
+                    "&:hover": { backgroundColor: BRAND.purplePale, borderColor: BRAND.purple },
+                  }}>
+                    Place a Custom Order
+                  </Button>
+                </Link>
+              </Box>
             </Box>
 
             {/* Trust note */}

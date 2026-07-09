@@ -22,14 +22,9 @@ export default async function ProductDetailPage({ params }: Props) {
   const product = getProductBySlug(slug);
   if (!product || product.category !== category) notFound();
 
-  const wa    = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919876543210";
-  const waMsg = encodeURIComponent(
-    `Hello Paperboat Gifts! 🎁\n\nI'd like to order:\n\n*Product:* ${product.name}\n*Price:* ${product.priceLabel}\n\nPlease guide me on customization and delivery.`
-  );
-
   return (
     <>
-      <ProductDetailView product={product} wa={wa} waMsg={waMsg} />
+      <ProductDetailView product={product} />
       <CTASection />
     </>
   );
